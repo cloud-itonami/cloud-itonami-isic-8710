@@ -2,7 +2,7 @@
 
 ## Classification
 
-- Repository: `cloud-itonami-8710`
+- Repository: `cloud-itonami-isic-8710`
 - ISIC Rev.5: `8710`
 - Activity: residential nursing care -- combined nursing, supervisory and personal care for residents requiring ongoing medical attention
 - Social impact: care quality, data sovereignty, transparent audit

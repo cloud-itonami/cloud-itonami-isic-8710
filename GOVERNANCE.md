@@ -1,6 +1,6 @@
 # Governance
 
-`cloud-itonami-8710` is an OSS open-business blueprint for residential nursing care -- combined nursing, supervisory and personal care for residents requiring ongoing medical attention.
+`cloud-itonami-isic-8710` is an OSS open-business blueprint for residential nursing care -- combined nursing, supervisory and personal care for residents requiring ongoing medical attention.
 Governance covers both the capability layer and the operator model.
 
 ## Maintainers

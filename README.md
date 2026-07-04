@@ -1,4 +1,4 @@
-# cloud-itonami-8710
+# cloud-itonami-isic-8710
 
 Open Business Blueprint for **ISIC Rev.5 8710**: Residential nursing care facilities.
 

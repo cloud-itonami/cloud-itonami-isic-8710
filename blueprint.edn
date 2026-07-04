@@ -1,4 +1,4 @@
-{:itonami.blueprint/id "cloud-itonami-8710"
+{:itonami.blueprint/id "cloud-itonami-isic-8710"
  :itonami.blueprint/name "Residential nursing care facilities"
  :itonami.blueprint/isic-rev5 "8710"
  :itonami.blueprint/domain :health/residential-nursing-care
