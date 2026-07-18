@@ -1,0 +1,82 @@
+<html><head><meta charset="utf-8"><title>cloud-itonami-isic-8710 &middot; residential nursing care facilities</title><style>
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.ok { color: #137a3f; }
+body { font-family: system-ui,-apple-system,sans-serif; margin: 0; color: #1a1a1a; background: #fafafa; }
+header.bar { display: flex; align-items: center; gap: 12px; padding: 12px 20px; background: #fff; border-bottom: 1px solid #e5e5e5; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid #f0f0f0; }
+h2 { margin-top: 0; font-size: 15px; }
+.warn { color: #b25c00; background: #fff8e1; padding: 2px 6px; border-radius: 4px; }
+main { max-width: 980px; margin: 24px auto; padding: 0 20px; }
+header.bar h1 { font-size: 18px; margin: 0; font-weight: 600; }
+.muted { color: #888; font-size: 13px; }
+.critical { color: #fff; background: #b3261e; padding: 2px 6px; border-radius: 4px; font-weight: 600; }
+.card { background: #fff; border: 1px solid #e5e5e5; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+.err { color: #b3261e; background: #fbe9e7; padding: 2px 6px; border-radius: 4px; }
+th { font-weight: 600; color: #555; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; }
+header.bar .badge { margin-left: auto; font-size: 12px; color: #666; }
+code { font-size: 12px; background: #f4f4f4; padding: 1px 4px; border-radius: 3px; }
+</style></head><body>
+<header class="bar">
+  <h1>Residential nursing care facilities (ISIC 8710) — Operator Console</h1>
+  <span class="badge">read-only sample · governor-gated · medication administration/incident-response finalization always human-approved</span>
+</header>
+<main>
+  <section class="card">
+    <h2>Residents</h2>
+    <p class="muted">Demo snapshot — build-time-generated from <code>nursing.store</code> via <code>nursing.render-html</code> (<code>clojure -M:dev:render-html</code>), regenerated nightly.</p>
+    <table>
+      <thead><tr><th>Resident</th><th>Name</th><th>Jurisdiction</th><th>Proposed medication</th><th>Contraindications</th><th>Dosage / Max (mg)</th><th>Credential</th><th>Administration / Finalization</th><th>Last op status</th></tr></thead>
+      <tbody>
+        <tr><td>resident-1</td><td>Sato Kenji</td><td>JPN</td><td>acetaminophen</td><td>none</td><td>500 / 1000</td><td><span class="ok">current</span></td><td>administered / finalized</td><td><span class="ok">committed</span></td></tr>
+        <tr><td>resident-2</td><td>Atlantis Doe</td><td>ATL</td><td>acetaminophen</td><td>none</td><td>500 / 1000</td><td><span class="ok">current</span></td><td>not administered / not finalized</td><td><span class="critical">HARD hold &middot; no-spec-basis</span></td></tr>
+        <tr><td>resident-3</td><td>鈴木花子</td><td>JPN</td><td>warfarin</td><td>warfarin</td><td>5 / 10</td><td><span class="ok">current</span></td><td>not administered / not finalized</td><td><span class="critical">HARD hold &middot; medication-contraindicated</span></td></tr>
+        <tr><td>resident-4</td><td>田中一郎</td><td>JPN</td><td>acetaminophen</td><td>none</td><td>500 / 1000</td><td><span class="critical">not current</span></td><td>not administered / not finalized</td><td><span class="critical">HARD hold &middot; credential-not-current</span></td></tr>
+        <tr><td>resident-5</td><td>高橋美咲</td><td>JPN</td><td>acetaminophen</td><td>none</td><td>1500 / 1000</td><td><span class="ok">current</span></td><td>not administered / not finalized</td><td><span class="muted">no activity</span></td></tr>
+      </tbody>
+    </table>
+  </section>
+  <section class="card">
+    <h2>Draft medication-administration / incident-response-finalization records</h2>
+    <p class="muted">Unsigned drafts only — the licensed nursing-care operator's own act of signing is outside this actor's authority (see README <code>Actuation</code>).</p>
+    <table>
+      <thead><tr><th>Kind</th><th>Record id</th><th>Resident</th><th>Jurisdiction</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>administration</td><td>JPN-MED-000000</td><td>resident-1</td><td>JPN</td><td><span class="ok">immutable draft</span></td></tr>
+        <tr><td>finalization</td><td>JPN-INC-000000</td><td>resident-1</td><td>JPN</td><td><span class="ok">immutable draft</span></td></tr>
+      </tbody>
+    </table>
+  </section>
+  <section class="card">
+    <h2>Action gate (Nursing Care Governor)</h2>
+    <p class="muted">HARD holds cannot be overridden by a human approver. Jurisdiction spec-basis, evidence completeness, medication contraindications, dosage ceilings and nursing-staff credential currency are independently recomputed, never trusted from the advisor's proposal; a real medication administration or incident-response finalization is always a human licensed nurse's call, at every rollout phase.</p>
+    <table>
+      <thead><tr><th>Op</th><th>Gate</th></tr></thead>
+      <tbody>
+        <tr><td><code>:resident/intake</code></td><td><span class="ok">phase-3 auto-commit when clean, no capital risk yet -- the ONLY auto-eligible op in this domain</span></td></tr>
+        <tr><td><code>:careplan/verify</code></td><td><span class="warn">ALWAYS human approval &middot; spec-basis independently checked against <code>nursing.facts</code>, never fabricated</span></td></tr>
+        <tr><td><code>:credential/screen</code></td><td><span class="warn">ALWAYS human approval when clean &middot; a not-current nursing-staff credential is a HARD, un-overridable hold instead</span></td></tr>
+        <tr><td><code>:actuation/administer-medication</code></td><td><span class="warn">ALWAYS human approval &middot; real medication dose given &middot; contraindication + dosage-ceiling independently recomputed, never auto at any phase</span></td></tr>
+        <tr><td><code>:actuation/finalize-incident-response</code></td><td><span class="warn">ALWAYS human approval &middot; real incident response finalized &middot; evidence checklist independently recomputed, never auto at any phase</span></td></tr>
+      </tbody>
+    </table>
+  </section>
+  <section class="card">
+    <h2>Audit ledger (this run)</h2>
+    <p class="muted">Append-only decision-fact log — every proposal, hold and commit this scenario produced.</p>
+    <table>
+      <thead><tr><th>Fact</th><th>Op</th><th>Subject</th><th>Basis</th></tr></thead>
+      <tbody>
+        <tr><td>committed</td><td><code>intake</code></td><td>resident-1</td><td>id, resident-name</td></tr>
+        <tr><td>committed</td><td><code>verify</code></td><td>resident-1</td><td>指定介護老人福祉施設の人員、設備及び運営に関する基準 (厚生省令第39号) / 介護保険法, https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/hukushi_kaigo/kaigo_koureisha/index.html</td></tr>
+        <tr><td>committed</td><td><code>screen</code></td><td>resident-1</td><td>credential-check</td></tr>
+        <tr><td>committed</td><td><code>administer-medication</code></td><td>resident-1</td><td>resident-1</td></tr>
+        <tr><td>committed</td><td><code>finalize-incident-response</code></td><td>resident-1</td><td>resident-1</td></tr>
+        <tr><td>governor-hold</td><td><code>verify</code></td><td>resident-2</td><td>no-spec-basis</td></tr>
+        <tr><td>committed</td><td><code>verify</code></td><td>resident-3</td><td>指定介護老人福祉施設の人員、設備及び運営に関する基準 (厚生省令第39号) / 介護保険法, https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/hukushi_kaigo/kaigo_koureisha/index.html</td></tr>
+        <tr><td>governor-hold</td><td><code>administer-medication</code></td><td>resident-3</td><td>medication-contraindicated</td></tr>
+        <tr><td>governor-hold</td><td><code>screen</code></td><td>resident-4</td><td>credential-not-current</td></tr>
+      </tbody>
+    </table>
+  </section>
+</main>
+</body></html>
