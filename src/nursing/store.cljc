@@ -37,10 +37,9 @@
   immutable log -- the audit trail a family trusting a nursing-care
   operator needs, and the evidence an operator needs if an
   administration or finalization decision is later disputed."
-  (:require #?(:clj  [clojure.edn :as edn]
-               :cljs [cljs.reader :as edn])
-            [nursing.registry :as registry]
-            [langchain.db :as d]))
+  (:require [nursing.registry :as registry]
+            [langchain.db :as d]
+            [langchain-store.core :as ls]))
 
 (defprotocol Store
   (resident [s id])
@@ -203,8 +202,8 @@
    :administration-sequence/jurisdiction   {:db/unique :db.unique/identity}
    :finalization-sequence/jurisdiction     {:db/unique :db.unique/identity}})
 
-(defn- enc [v] (pr-str v))
-(defn- dec* [s] (when s (edn/read-string s)))
+;; EDN-blob codec (`enc`/`dec*`) comes from `kotoba-lang/langchain-store`
+;; (ADR-2607141600) instead of being hand-rolled here.
 
 (defn- resident->tx [{:keys [id resident-name proposed-medication medication-contraindications
                              medication-dosage-mg medication-max-authorized-dosage-mg
@@ -213,8 +212,8 @@
                              jurisdiction status administration-number incident-number]}]
   (cond-> {:resident/id id}
     resident-name                                (assoc :resident/resident-name resident-name)
-    proposed-medication                           (assoc :resident/proposed-medication (enc proposed-medication))
-    medication-contraindications                  (assoc :resident/medication-contraindications (enc medication-contraindications))
+    proposed-medication                           (assoc :resident/proposed-medication (ls/enc proposed-medication))
+    medication-contraindications                  (assoc :resident/medication-contraindications (ls/enc medication-contraindications))
     medication-dosage-mg                          (assoc :resident/medication-dosage-mg medication-dosage-mg)
     medication-max-authorized-dosage-mg           (assoc :resident/medication-max-authorized-dosage-mg medication-max-authorized-dosage-mg)
     (some? credential-not-current?)               (assoc :resident/credential-not-current? credential-not-current?)
@@ -234,8 +233,8 @@
 (defn- pull->resident [m]
   (when (:resident/id m)
     {:id (:resident/id m) :resident-name (:resident/resident-name m)
-     :proposed-medication (dec* (:resident/proposed-medication m))
-     :medication-contraindications (dec* (:resident/medication-contraindications m))
+     :proposed-medication (ls/dec* (:resident/proposed-medication m))
+     :medication-contraindications (ls/dec* (:resident/medication-contraindications m))
      :medication-dosage-mg (:resident/medication-dosage-mg m)
      :medication-max-authorized-dosage-mg (:resident/medication-max-authorized-dosage-mg m)
      :credential-not-current? (boolean (:resident/credential-not-current? m))
@@ -253,25 +252,25 @@
          (map #(pull->resident (d/pull (d/db conn) resident-pull [:resident/id %])))
          (sort-by :id)))
   (credential-screen-of [_ id]
-    (dec* (d/q '[:find ?p . :in $ ?rid
+    (ls/dec* (d/q '[:find ?p . :in $ ?rid
                 :where [?k :credential-screen/resident-id ?rid] [?k :credential-screen/payload ?p]]
               (d/db conn) id)))
   (careplan-of [_ resident-id]
-    (dec* (d/q '[:find ?p . :in $ ?rid
+    (ls/dec* (d/q '[:find ?p . :in $ ?rid
                 :where [?a :careplan/resident-id ?rid] [?a :careplan/payload ?p]]
               (d/db conn) resident-id)))
   (ledger [_]
     (->> (d/q '[:find ?s ?f :where [?e :ledger/seq ?s] [?e :ledger/fact ?f]] (d/db conn))
          (sort-by first)
-         (mapv (comp dec* second))))
+         (mapv (comp ls/dec* second))))
   (administration-history [_]
     (->> (d/q '[:find ?s ?r :where [?e :administration/seq ?s] [?e :administration/record ?r]] (d/db conn))
          (sort-by first)
-         (mapv (comp dec* second))))
+         (mapv (comp ls/dec* second))))
   (finalization-history [_]
     (->> (d/q '[:find ?s ?r :where [?e :finalization/seq ?s] [?e :finalization/record ?r]] (d/db conn))
          (sort-by first)
-         (mapv (comp dec* second))))
+         (mapv (comp ls/dec* second))))
   (next-administration-sequence [_ jurisdiction]
     (or (d/q '[:find ?n . :in $ ?j
               :where [?e :administration-sequence/jurisdiction ?j] [?e :administration-sequence/next ?n]]
@@ -292,10 +291,10 @@
       (d/transact! conn [(resident->tx value)])
 
       :careplan/set
-      (d/transact! conn [{:careplan/resident-id (first path) :careplan/payload (enc payload)}])
+      (d/transact! conn [{:careplan/resident-id (first path) :careplan/payload (ls/enc payload)}])
 
       :credential-screen/set
-      (d/transact! conn [{:credential-screen/resident-id (first path) :credential-screen/payload (enc payload)}])
+      (d/transact! conn [{:credential-screen/resident-id (first path) :credential-screen/payload (ls/enc payload)}])
 
       :resident/mark-administered
       (let [resident-id (first path)
@@ -305,7 +304,7 @@
         (d/transact! conn
                      [(resident->tx (assoc resident-patch :id resident-id))
                       {:administration-sequence/jurisdiction jurisdiction :administration-sequence/next next-n}
-                      {:administration/seq (count (administration-history s)) :administration/record (enc (get result "record"))}])
+                      {:administration/seq (count (administration-history s)) :administration/record (ls/enc (get result "record"))}])
         result)
 
       :resident/mark-finalized
@@ -316,12 +315,12 @@
         (d/transact! conn
                      [(resident->tx (assoc resident-patch :id resident-id))
                       {:finalization-sequence/jurisdiction jurisdiction :finalization-sequence/next next-n}
-                      {:finalization/seq (count (finalization-history s)) :finalization/record (enc (get result "record"))}])
+                      {:finalization/seq (count (finalization-history s)) :finalization/record (ls/enc (get result "record"))}])
         result)
       nil)
     s)
   (append-ledger! [s fact]
-    (d/transact! conn [{:ledger/seq (count (ledger s)) :ledger/fact (enc fact)}])
+    (d/transact! conn [{:ledger/seq (count (ledger s)) :ledger/fact (ls/enc fact)}])
     fact)
   (with-residents [s residents]
     (when (seq residents) (d/transact! conn (mapv resident->tx (vals residents)))) s))
