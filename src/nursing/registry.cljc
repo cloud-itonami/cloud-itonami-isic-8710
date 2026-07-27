@@ -85,6 +85,17 @@
   (and (number? medication-dosage-mg) (number? medication-max-authorized-dosage-mg)
        (> medication-dosage-mg medication-max-authorized-dosage-mg)))
 
+(defn medication-dosage-exceeds-maximum-checkable?
+  "Are both sides of `medication-dosage-exceeds-maximum?` actually recorded?
+
+  That predicate answers only `over` / `not over`, and its
+  `(and (number? ...) (number? ...) ...)` guard made every un-recorded
+  case fall through as `not over` -- an entity missing either figure
+  passed the limit check silently. Callers must ask this first:
+  un-checkable is not within limits."
+  [{:keys [medication-dosage-mg medication-max-authorized-dosage-mg]}]
+  (boolean (and (number? medication-dosage-mg) (number? medication-max-authorized-dosage-mg))))
+
 (defn register-medication-administration
   "Validate + construct the MEDICATION-ADMINISTRATION registration
   DRAFT -- the nursing-care operator's own act of administering a real
