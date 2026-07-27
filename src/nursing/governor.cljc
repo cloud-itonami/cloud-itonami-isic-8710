@@ -204,7 +204,17 @@
   [{:keys [op subject]} st]
   (when (= op :actuation/administer-medication)
     (let [r (store/resident st subject)]
-      (when (registry/medication-dosage-exceeds-maximum? r)
+      (cond
+        ;; Either figure missing or non-numeric: the limit cannot be
+        ;; evaluated, so it is not "within limits". This used to fall
+        ;; through as "not over" and proceed.
+        ;; Only when the entity EXISTS: a missing entity is a different
+        ;; violation that another gate owns, and firing here would mask it.
+        (and r (not (registry/medication-dosage-exceeds-maximum-checkable? r)))
+        [{:rule :medication-dosage-exceeds-maximum
+          :detail "上限判定に必要な値が記録されていない -- 限度内と断定できないため進めない"}]
+
+        (registry/medication-dosage-exceeds-maximum? r)
         [{:rule :medication-dosage-exceeds-maximum
           :detail (str subject " の提案投与量(" (:medication-dosage-mg r)
                       "mg)が上限(" (:medication-max-authorized-dosage-mg r) "mg)を超過")}]))))
