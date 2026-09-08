@@ -47,7 +47,7 @@
   `nursing.operation`'s `:actuation/administer-medication`/`:actuation/
   finalize-incident-response`, always human-gated -- see README
   `Actuation`)."
-  (:require [clojure.string :as str]))
+  (:require [kotoba.lang.text :as str]))
 
 (defn- unsigned-certificate
   "Every certificate this actor produces is UNSIGNED -- signature is the
@@ -111,7 +111,7 @@
     (throw (ex-info "medication-administration: jurisdiction required" {})))
   (when (< sequence 0)
     (throw (ex-info "medication-administration: sequence must be >= 0" {})))
-  (let [administration-number (str (str/upper-case jurisdiction) "-MED-" (zero-pad sequence 6))
+  (let [administration-number (str (str/upper jurisdiction) "-MED-" (zero-pad sequence 6))
         record {"record_id" administration-number
                 "kind" "medication-administration-draft"
                 "resident_id" resident-id
@@ -135,7 +135,7 @@
     (throw (ex-info "incident-response-finalization: jurisdiction required" {})))
   (when (< sequence 0)
     (throw (ex-info "incident-response-finalization: sequence must be >= 0" {})))
-  (let [incident-number (str (str/upper-case jurisdiction) "-INC-" (zero-pad sequence 6))
+  (let [incident-number (str (str/upper jurisdiction) "-INC-" (zero-pad sequence 6))
         record {"record_id" incident-number
                 "kind" "incident-response-finalization-draft"
                 "resident_id" resident-id
