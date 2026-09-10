@@ -114,7 +114,7 @@ administer-medication`/`:actuation/finalize-incident-response`
 high-stakes gate and `nursing.phase`'s phase table, which never puts
 `:actuation/administer-medication`/`:actuation/finalize-incident-
 response` in any phase's `:auto` set) -- see `nursing.phase`'s
-docstring and `test/nursing/phase_test.clj`'s `administer-medication-
+docstring and `test/nursing/phase_test.kotoba`'s `administer-medication-
 never-auto-at-any-phase`/`finalize-incident-response-never-auto-at-
 any-phase`. The actor may draft, check and recommend; a human licensed
 nurse is always the one who actually administers medication or
@@ -204,14 +204,14 @@ bespoke domain capability lib to reference at all.
 
 | File | Role |
 |---|---|
-| `src/nursing/store.cljc` | **Store** protocol -- `MemStore` ‖ `DatomicStore` (`langchain.db`) + append-only audit ledger + separate medication-administration/incident-response-finalization history. No dynamically-filed sub-record -- both actuation ops act directly on a pre-seeded resident, and the double-actuation guards check dedicated `:medication-administered?`/`:incident-response-finalized?` booleans rather than a `:status` value |
-| `src/nursing/registry.cljc` | Medication-administration + incident-response-finalization draft records, plus `medication-contraindicated?` (the THIRD literal reuse of `clinic.registry/treatment-contraindicated?`'s set-membership/conflict concept, after `veterinary`) and `medication-dosage-exceeds-maximum?` -- the EIGHTH instance of this fleet's MAXIMUM-ceiling check family (`facility`/`school`/`card`/`recovery`/`care`/`navigator`/`advertising` established the first seven) |
-| `src/nursing/facts.cljc` | Per-jurisdiction residential-nursing-care catalog with an official spec-basis citation per entry, honest coverage reporting |
-| `src/nursing/nursingadvisor.cljc` | **NursingOps-LLM** -- `mock-advisor` ‖ `llm-advisor`; intake/careplan-verification/credential-screening/medication-administration/incident-response-finalization proposals |
-| `src/nursing/governor.cljc` | **Nursing Care Governor** -- 5 HARD checks (spec-basis · evidence-incomplete · medication-contraindicated, set-membership/conflict recompute · medication-dosage-exceeds-maximum, pure ground-truth ceiling recompute · credential-not-current, unconditional evaluation, the FORTY-SECOND grounding of this discipline, a literal reuse already established by `clinic`/`hospital`/`eldercare`/`veterinary` and several other licensed-professional siblings) + already-administered/already-finalized guards + 1 soft (confidence/actuation gate) |
-| `src/nursing/phase.cljc` | **Phase 0→3** -- read-only → assisted intake → assisted verify → supervised (both medication administration and incident-response finalization always human; resident intake is the ONLY auto-eligible op, no direct capital risk) |
-| `src/nursing/operation.cljc` | **OperationActor** -- langgraph-clj StateGraph |
-| `src/nursing/sim.cljc` | demo driver |
+| `src/nursing/store.kotoba` | **Store** protocol -- `MemStore` ‖ `DatomicStore` (`langchain.db`) + append-only audit ledger + separate medication-administration/incident-response-finalization history. No dynamically-filed sub-record -- both actuation ops act directly on a pre-seeded resident, and the double-actuation guards check dedicated `:medication-administered?`/`:incident-response-finalized?` booleans rather than a `:status` value |
+| `src/nursing/registry.kotoba` | Medication-administration + incident-response-finalization draft records, plus `medication-contraindicated?` (the THIRD literal reuse of `clinic.registry/treatment-contraindicated?`'s set-membership/conflict concept, after `veterinary`) and `medication-dosage-exceeds-maximum?` -- the EIGHTH instance of this fleet's MAXIMUM-ceiling check family (`facility`/`school`/`card`/`recovery`/`care`/`navigator`/`advertising` established the first seven) |
+| `src/nursing/facts.kotoba` | Per-jurisdiction residential-nursing-care catalog with an official spec-basis citation per entry, honest coverage reporting |
+| `src/nursing/nursingadvisor.kotoba` | **NursingOps-LLM** -- `mock-advisor` ‖ `llm-advisor`; intake/careplan-verification/credential-screening/medication-administration/incident-response-finalization proposals |
+| `src/nursing/governor.kotoba` | **Nursing Care Governor** -- 5 HARD checks (spec-basis · evidence-incomplete · medication-contraindicated, set-membership/conflict recompute · medication-dosage-exceeds-maximum, pure ground-truth ceiling recompute · credential-not-current, unconditional evaluation, the FORTY-SECOND grounding of this discipline, a literal reuse already established by `clinic`/`hospital`/`eldercare`/`veterinary` and several other licensed-professional siblings) + already-administered/already-finalized guards + 1 soft (confidence/actuation gate) |
+| `src/nursing/phase.kotoba` | **Phase 0→3** -- read-only → assisted intake → assisted verify → supervised (both medication administration and incident-response finalization always human; resident intake is the ONLY auto-eligible op, no direct capital risk) |
+| `src/nursing/operation.kotoba` | **OperationActor** -- langgraph-clj StateGraph |
+| `src/nursing/sim.kotoba` | demo driver |
 | `test/nursing/*_test.clj` | governor contract · phase invariants · store parity · registry conformance · facts coverage |
 
 ## Business-process coverage (honest)
