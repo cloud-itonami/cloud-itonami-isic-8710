@@ -1,5 +1,5 @@
 (ns nursing.sim
-  "Demo driver -- `clojure -M:dev:run`. Walks a clean resident through
+  "Demo driver -- `kbb -M:dev:run`. Walks a clean resident through
   intake -> care-plan verification -> credential-currency screening ->
   medication-administration proposal (always escalates) -> human
   approval -> commit, then through incident-response-finalization

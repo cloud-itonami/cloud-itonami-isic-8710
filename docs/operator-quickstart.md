@@ -19,7 +19,7 @@ This repository is standalone and can be forked outside the monorepo. If you're 
 Walk through one complete lifecycle plus five HARD-hold cases:
 
 ```bash
-clojure -M:dev:run
+kbb -M:dev:run
 ```
 
 This executes `src/nursing/sim.kotoba`, driving the `OperationActor` through resident intake, care-plan verification, medication administration, and incident-response finalization, showing where the Nursing Care Governor holds or approves each step.
@@ -29,13 +29,13 @@ This executes `src/nursing/sim.kotoba`, driving the `OperationActor` through res
 Verify the governor contract, phase invariants, store behavior, and jurisdiction facts:
 
 ```bash
-clojure -M:dev:test
+kbb -M:dev:test
 ```
 
 Or just the basics (no workspace dev overrides):
 
 ```bash
-clojure -M:test
+kbb -M:test
 ```
 
 Key test suites:
@@ -49,7 +49,7 @@ Key test suites:
 ## Run static analysis
 
 ```bash
-clojure -M:lint
+kbb -M:lint
 ```
 
 Validates code with [clj-kondo](https://github.com/clj-kondo/clj-kondo); failures exit with status 1 (same as CI).
