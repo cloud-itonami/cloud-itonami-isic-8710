@@ -1,0 +1,33 @@
+;; What this vertical's robot physically does, declared for
+;; kotoba.robotics.process (kotoba-lang/robotics). `kbb -M:dev:physics` runs it.
+;;
+;; README "Robotics premise": a resident-monitoring and mobility-assist robot
+;; supports physical care tasks in residential nursing care facilities
+;; (ISIC 8710). Its physical work: taking part of a resident's weight in a
+;; sit-to-stand assist, and delivering hot meal trays from the kitchen to
+;; residents' rooms, where the food must still be hot when it arrives.
+;;
+;; Every number without a cited source is marked `estimate` in its :basis.
+;; Replacing an estimate with a sourced value is this bot's growth work.
+{:physics/schema "itonami.physical-ai.spec.v1"
+ :repo "cloud-itonami/cloud-itonami-isic-8710"
+ :cases
+ [{:id :sit-to-stand-assist
+   :kind :manipulator
+   :procedure "support arm takes part of a resident's weight under the forearms and raises them from seated to standing"
+   :params {:l1-m 0.45 :l2-m 0.40 :m1-kg 8.0 :m2-kg 5.0
+            :from [0.45 0.45] :to [0.30 0.75] :duration-s 3.0 :steps 500}
+   :sweep {:param :payload-kg :values [10.0 20.0 30.0 40.0 50.0]}
+   :quantity :peak-tau1-nm
+   :limit {:max 200.0 :basis "estimate: continuous shoulder torque of a care-assist support arm; payload is the share of body weight carried, not the whole resident"}
+   :boundary {:lo 2.0 :hi 100.0}}
+  {:id :meal-tray-hot-hold
+   :kind :thermal
+   :procedure "a 5 cm deep portion of stew leaves the kitchen at 75 C on the robot's covered tray; surface temperature on arrival (half depth, symmetric)"
+   :params {:thickness-m 0.025 :conductivity-w-mk 0.5 :density-kg-m3 1050.0 :specific-heat-j-kgk 3600.0
+            :t0-c 75.0 :t-hot-c 22.0 :h-front-w-m2k 8.0 :h-back-w-m2k 0.0
+            :threshold-c 57.0 :threshold-direction :falling :nodes 11}
+   :sweep {:param :duration-s :values [300.0 600.0 900.0 1200.0 1800.0]}
+   :quantity :final-front-c
+   :limit {:min 57.0 :basis "FDA Food Code 3-501.16: hot-held time/temperature-control food at 57 C (135 F) or above"}
+   :boundary {:lo 60.0 :hi 5400.0}}]}
